@@ -21,6 +21,7 @@ interface AppState {
   getQuantity: (packId: string) => number
   addToInventory: (cards: PackCard[]) => void
   removeFromInventory: (cardId: string) => void
+  removeMultipleFromInventory: (cardIds: string[]) => void
   addBalance: (amount: number) => void
   setShowPaymentDialog: (show: boolean) => void
   openFromList: (packId: string) => void
@@ -76,6 +77,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setInventory(prev => prev.filter(c => c.id !== cardId))
   }, [])
 
+  const removeMultipleFromInventory = useCallback((cardIds: string[]) => {
+    const idSet = new Set(cardIds)
+    setInventory(prev => prev.filter(c => !idSet.has(c.id)))
+  }, [])
+
   const addBalance = useCallback((amount: number) => {
     setBalance(prev => prev + amount)
   }, [])
@@ -104,6 +110,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         getQuantity,
         addToInventory,
         removeFromInventory,
+        removeMultipleFromInventory,
         addBalance,
         setShowPaymentDialog,
         openFromList,

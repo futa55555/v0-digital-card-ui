@@ -29,6 +29,11 @@ export const SAMPLE_CARDS: PackCard[] = [
   { id: "c3", name: "Mewtwo GX", image: "/images/card-mewtwo.jpg", rarity: "Ultra Rare", grade: 10, value: 280 },
   { id: "c4", name: "Blastoise EX", image: "/images/card-blastoise.jpg", rarity: "Rare", grade: 8, value: 65 },
   { id: "c5", name: "Venusaur VSTAR", image: "/images/card-venusaur.jpg", rarity: "Rare", grade: 7, value: 40 },
+  { id: "c6", name: "Eevee", image: "/images/card-pikachu.jpg", rarity: "Common", grade: 6, value: 5 },
+  { id: "c7", name: "Bulbasaur", image: "/images/card-venusaur.jpg", rarity: "Common", grade: 5, value: 3 },
+  { id: "c8", name: "Squirtle", image: "/images/card-blastoise.jpg", rarity: "Common", grade: 6, value: 4 },
+  { id: "c9", name: "Charmander", image: "/images/card-charizard.jpg", rarity: "Uncommon", grade: 7, value: 12 },
+  { id: "c10", name: "Jigglypuff", image: "/images/card-pikachu.jpg", rarity: "Common", grade: 5, value: 2 },
 ]
 
 export const PACKS: Pack[] = [
@@ -48,7 +53,7 @@ export const PACKS: Pack[] = [
       { rarity: "Ultra Rare", chance: "9%" },
       { rarity: "Secret Rare", chance: "3%" },
     ],
-    cards: SAMPLE_CARDS,
+    cards: SAMPLE_CARDS.slice(0, 5),
   },
   {
     id: "baseball-starter",
@@ -66,7 +71,7 @@ export const PACKS: Pack[] = [
       { rarity: "Ultra Rare", chance: "8%" },
       { rarity: "Secret Rare", chance: "2%" },
     ],
-    cards: SAMPLE_CARDS,
+    cards: SAMPLE_CARDS.slice(0, 5),
   },
   {
     id: "basketball-hoops",
@@ -84,7 +89,7 @@ export const PACKS: Pack[] = [
       { rarity: "Ultra Rare", chance: "9%" },
       { rarity: "Secret Rare", chance: "3%" },
     ],
-    cards: SAMPLE_CARDS,
+    cards: SAMPLE_CARDS.slice(0, 5),
   },
   {
     id: "football-starter",
@@ -102,7 +107,7 @@ export const PACKS: Pack[] = [
       { rarity: "Ultra Rare", chance: "8%" },
       { rarity: "Secret Rare", chance: "2%" },
     ],
-    cards: SAMPLE_CARDS,
+    cards: SAMPLE_CARDS.slice(0, 5),
   },
   {
     id: "anime-dragon",
@@ -120,7 +125,7 @@ export const PACKS: Pack[] = [
       { rarity: "Ultra Rare", chance: "9%" },
       { rarity: "Secret Rare", chance: "3%" },
     ],
-    cards: SAMPLE_CARDS,
+    cards: SAMPLE_CARDS.slice(0, 5),
   },
   {
     id: "onepiece-voyage",
@@ -138,18 +143,66 @@ export const PACKS: Pack[] = [
       { rarity: "Ultra Rare", chance: "12%" },
       { rarity: "Secret Rare", chance: "5%" },
     ],
-    cards: SAMPLE_CARDS,
+    cards: SAMPLE_CARDS.slice(0, 5),
   },
 ]
+
+const RARITY_WEIGHTS: Record<string, number> = {
+  "Common": 40,
+  "Uncommon": 30,
+  "Rare": 18,
+  "Ultra Rare": 9,
+  "Secret Rare": 3,
+}
+
+function weightedRandomCard(): PackCard {
+  const totalWeight = Object.values(RARITY_WEIGHTS).reduce((a, b) => a + b, 0)
+  let roll = Math.random() * totalWeight
+  let chosenRarity: string = "Common"
+
+  for (const [rarity, weight] of Object.entries(RARITY_WEIGHTS)) {
+    roll -= weight
+    if (roll <= 0) {
+      chosenRarity = rarity
+      break
+    }
+  }
+
+  const matching = SAMPLE_CARDS.filter(c => c.rarity === chosenRarity)
+  if (matching.length === 0) {
+    return { ...SAMPLE_CARDS[0], id: `${SAMPLE_CARDS[0].id}-${Date.now()}-${Math.random()}` }
+  }
+  const card = matching[Math.floor(Math.random() * matching.length)]
+  return { ...card, id: `${card.id}-${Date.now()}-${Math.random()}` }
+}
 
 export function getRandomCards(count: number): PackCard[] {
   const results: PackCard[] = []
   for (let i = 0; i < count; i++) {
-    const card = SAMPLE_CARDS[Math.floor(Math.random() * SAMPLE_CARDS.length)]
-    results.push({
-      ...card,
-      id: `${card.id}-${Date.now()}-${i}`,
-    })
+    results.push(weightedRandomCard())
   }
   return results
+}
+
+export function isHighValue(card: PackCard): boolean {
+  return card.rarity === "Secret Rare" || card.rarity === "Ultra Rare" || card.value >= 100
+}
+
+export function getRarityColor(rarity: string): string {
+  switch (rarity) {
+    case "Secret Rare": return "text-accent"
+    case "Ultra Rare": return "text-primary"
+    case "Rare": return "text-chart-5"
+    case "Uncommon": return "text-secondary-foreground"
+    default: return "text-muted-foreground"
+  }
+}
+
+export function getRarityBg(rarity: string): string {
+  switch (rarity) {
+    case "Secret Rare": return "bg-accent/20 border-accent/40"
+    case "Ultra Rare": return "bg-primary/20 border-primary/40"
+    case "Rare": return "bg-chart-5/20 border-chart-5/40"
+    default: return "bg-secondary border-border"
+  }
 }
